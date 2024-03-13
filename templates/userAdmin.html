@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> s2008156 Cloud Computing A1 2024 SP1 </title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <h1> {{ name }} </h1>
+        <form method="POST">
+            <label for="oldPword">Old Password: </label>
+            <input type="text" id="oldPword" name="oldPword" required> {{ error_oldPword }} <br>
+            <label for="newPword">New Password: </label>
+            <input type="text" id="newPword" name="newPword" required><br>
+            <input type="submit" value="Change Password">
+        </form>
+    </body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> s2008156 Cloud Computing A1 2024 SP1 </title>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <h1> The Forum! </h1>
+        <h2> Enter if you dare </h2>
+        <form method="POST">
+            <label for="loginid">ID: </label>
+            <input type="text" id="loginid" name="loginid" required><br>
+            <label for="loginpw">Password: </label>
+            <input type="text" id="loginpw" name="loginpw" required><br>
+            <input type="submit" value="Login">
+            <h3> {{ error_message }} </h3>
+        </form>
+        <form action="{{ url_for('registration') }}">
+            <input type="submit" value="Register"> 
+        </form>
+    </body>
+</html>
