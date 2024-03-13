@@ -1,1 +1,4 @@
 Flask==3.0.0
+google.cloud==0.34.0
+google.cloud.datastore==2.19.0
+protobuf==3.20.*

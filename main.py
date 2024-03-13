@@ -1,6 +1,10 @@
-from flask import Flask, redirect, render_template, request, session, url_for
 
-#dummy data generation. This will be replaced with G-datastore stuff once I flesh out the rest of my code.
+from flask import Flask, redirect, render_template, request, session, url_for
+from google.cloud import datastore
+from google.cloud.datastore import query
+from google.cloud.datastore.query import PropertyFilter
+
+datastore_client = datastore.Client()
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
@@ -23,8 +27,42 @@ class User:
     
     def setUsername(self, username):
         self.username = username
-        
 
+
+def validateLogin(id,password):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("id", "=", id))
+    query.add_filter(filter = PropertyFilter("password", "=", password))
+    
+    return list(query.fetch())
+
+def setUser(id,password):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("id", "=", id))
+    query.add_filter(filter = PropertyFilter("password", "=", password))
+    
+    for entity in query.fetch():
+        
+        user = User(entity["id"],entity["user_name"],entity["password"])
+        
+        return user
+    
+
+def checkId(id):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("id", "=", id))
+
+    return list(query.fetch())
+
+def checkUname(username):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("user_name", "=", username))
+
+    return list(query.fetch())
+
+
+        
+'''
 #dummy List of users This is based off the requirements for part 1.
 userList = []
 
@@ -44,7 +82,7 @@ def populateList():
         
 #function call to create the list. Python works from top down like html.     
 populateList() 
-
+'''
 
 app = Flask(__name__)
 app.secret_key = "helloworld"
@@ -58,18 +96,17 @@ def index():
         login_id = request.form.get("loginid")
         login_pw = request.form.get("loginpw")
         
-        #use of for loop to go through the userList to validate user input values
-        for user in userList:
+        results = validateLogin(login_id, login_pw)
+        
+        if len(results) > 0:
             
-            if login_id == user.getID() and login_pw == user.getPassword():
-                
-                session["user"] = user.getUsername()
-                #if valid user inputs load up forumMain page otherwise just display error msg
-                return render_template("forumMain.html", name = user.getUsername())
-                
-            else:
-                
-                return render_template("index.html", error_message = "incorrect id or password")
+            user = setUser(login_id,login_pw)
+            session["user"] = user.getUsername()
+            
+            return render_template("forumMain.html", name = session["user"])
+        else:
+            
+            return render_template("index.html", error_message = "incorrect id or password")
     else:         
         return render_template("index.html")
 
@@ -80,7 +117,20 @@ def registration():
         regoId = request.form.get("regId")
         regoUname = request.form.get("regUsername")
         regoPword = request.form.get("regPword")
+
+        if (len(checkId(regoId)) > 0):
+            
+            return render_template("registration.html", error_id = "The ID already exists")
         
+        elif (len(checkUname(regoUname)) > 0):
+                
+            return render_template("registration.html", error_username = "The username already exists")
+            
+        else:
+        
+            return redirect(url_for('index'))
+        
+        '''
         for user in userList:
             
             if regoId == user.getID():
@@ -96,7 +146,7 @@ def registration():
                 #add code to add new user!
                 
                 return redirect(url_for('index'))
-            
+        '''
     else:
         return render_template("registration.html")
      
