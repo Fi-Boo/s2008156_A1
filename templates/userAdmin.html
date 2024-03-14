@@ -14,5 +14,19 @@
             <input type="text" id="newPword" name="newPword" required><br>
             <input type="submit" value="Change Password">
         </form>
+        <br>
+        <div>
+            {% for time in times %}
+            <form >
+                <label>Post #</lobal>
+                <input type="text" id="postID" name= "postID" value="{{loop.index}}">{{loop.index}}
+                Timestamp: {{ time['timestamp'] }} <br>
+                Subject: {{ time['subject'] }} <br>
+                Message: {{ time['message'] }} <br>
+                <input type="submit" value="Edit"><br>
+            <form>
+            {% endfor %}
+
+        </div>
     </body>
 </html>

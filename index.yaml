@@ -1,0 +1,18 @@
+indexes:
+
+- kind: posts
+  ancestor: no
+  properties:
+  - name: user
+  - name: timestamp
+    direction: desc
+  - name: subject
+  - name: message
+  
+
+- kind: user
+  ancestor: no
+  properties:
+  - name: id
+  - name: user_name
+  - name: password
