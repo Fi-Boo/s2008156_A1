@@ -28,7 +28,6 @@ class User:
     def setUsername(self, username):
         self.username = username
 
-
 def validateLogin(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -47,7 +46,6 @@ def setUser(id,password):
         
         return user
     
-
 def checkId(id):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -60,29 +58,26 @@ def checkUname(username):
 
     return list(query.fetch())
 
-
-        
-'''
-#dummy List of users This is based off the requirements for part 1.
-userList = []
-
-def populateList():
+def updatePassword(username, newPword):
     
-    value = 0
-
-    numbers = [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4]
-
-    #playing with a while loop to make adding users easier
-    while value < 10:
-        id = "s2008156" + str(value)
-        username = "phibui" + str(value)
-        password = str(numbers[0+value]) + str(numbers[1+value]) + str(numbers[2+value]) + str(numbers[3+value]) + str(numbers[4+value]) + str(numbers[5+value]) 
-        userList.append (User(id, username, password))
-        value += 1
+    with datastore_client.transaction():
         
-#function call to create the list. Python works from top down like html.     
-populateList() 
-'''
+        query = datastore_client.query(kind="user")
+        query.add_filter(filter = PropertyFilter("user_name", "=", username))
+        
+        for entity in query.fetch():
+            
+            user = datastore_client.get(entity.key)
+            user["password"] = newPword
+            datastore_client.put(user)      
+
+def addUser(id, username, password):
+    
+    entity = datastore.Entity(key=datastore_client.key("user"))
+    entity.update({"id": id, "user_name": username, "password": password})
+    datastore_client.put(entity)
+
+#FLASK RELATED
 
 app = Flask(__name__)
 app.secret_key = "helloworld"
@@ -100,12 +95,14 @@ def index():
         
         if len(results) > 0:
             
+            print("valid login credentials")
             user = setUser(login_id,login_pw)
             session["user"] = user.getUsername()
             
             return render_template("forumMain.html", name = session["user"])
         else:
             
+            print("invalid login credentials")
             return render_template("index.html", error_message = "incorrect id or password")
     else:         
         return render_template("index.html")
@@ -127,26 +124,10 @@ def registration():
             return render_template("registration.html", error_username = "The username already exists")
             
         else:
-        
+            
+            addUser(regoId, regoUname, regoPword)
             return redirect(url_for('index'))
-        
-        '''
-        for user in userList:
-            
-            if regoId == user.getID():
-                 
-                return render_template("registration.html", error_id = "The ID already exists")
-            
-            elif regoUname == user.getUsername():
-                
-                return render_template("registration.html", error_username = "The username already exists")
-            
-            else:
-                
-                #add code to add new user!
-                
-                return redirect(url_for('index'))
-        '''
+
     else:
         return render_template("registration.html")
      
@@ -161,24 +142,28 @@ def userAdmin():
             oldPword = request.form.get("oldPword")
             newPword = request.form.get("newPword")
             
-            for user in userList:
-                
-                if session["user"] == user.getUsername() and oldPword == user.getPassword():
+            
+            tempList = checkUname(session["user"])
+            
+            for item in tempList:
+                if item["password"] == oldPword:
                     
-                    print("pass")
+                    
+                    updatePassword(session["user"], newPword)  
+                    session.pop(session["user"], None)
                     return redirect(url_for('index'))
-                
+                   
                 else:
                     
-                    return render_template("userAdmin.html", name = session["user"], error_oldPword = "incorrect password")
-        
+                    print("old password mismatch")
+                    return render_template("userAdmin.html", name = session["user"], error_oldPword = "incorrect password")  
+            
         else:
         
             return render_template("userAdmin.html", name = session["user"])
     
     else:
         return redirect(url_for('index'))
-
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)
