@@ -7,8 +7,31 @@
     </head>
     <body>
         <h1> Hello <a href="{{ url_for('userAdmin') }}"> {{ name }} </a></h1>
-        <form>
+        <form action="{{ url_for('index') }}">
             <input type="submit" value="Logout">
-        </form>
+        </form><br>
+        <div id="newMsgBlock">
+            <form method="POST">
+                <label for="newSubject">Subject: </label>
+                <input type="text" id="newSubject" name="newSubject" required><br>
+                <label for="newMessage">Message: </label>
+                <input type="text" id="newMessage" name="newMessage" required><br>
+                <input type="file" id="myFile" name="filename">
+                <input type="submit" value="Post">
+            </form>
+        </div>
+
+        <div id="recentMsgsBlock">
+
+            <h2>Last 10 posts</h2>
+                {% for time in times %}
+                User: {{ time['user'] }} <br>
+                Timestamp: {{ time['timestamp'] }} <br>
+                Subject: {{ time['subject'] }} <br>
+                Message: {{ time['message'] }} <br>
+                {% endfor %}
+        </div>
+
+
     </body>
 </html>

@@ -1,4 +1,5 @@
 
+import datetime
 from flask import Flask, redirect, render_template, request, session, url_for
 from google.cloud import datastore
 from google.cloud.datastore import query
@@ -77,6 +78,20 @@ def addUser(id, username, password):
     entity.update({"id": id, "user_name": username, "password": password})
     datastore_client.put(entity)
 
+def addForumPost(subject, message):
+    
+    entity = datastore.Entity(key=datastore_client.key("post"))
+    entity.update({"user": session["user"], "timestamp": datetime.datetime.now(tz=datetime.timezone.utc)  ,"subject": subject, "message": message})
+    datastore_client.put(entity)
+
+def getPosts(number):
+    query = datastore_client.query(kind="post")
+    query.order = ["-timestamp"]
+    
+    times = query.fetch(limit=number)
+    return times
+
+
 #FLASK RELATED
 
 app = Flask(__name__)
@@ -85,30 +100,43 @@ app.secret_key = "helloworld"
 #this routes the pages as per tutorial 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST': 
+    if request.method == 'POST':
         
-        #take the user input id and password from the html form and store it for validation
-        login_id = request.form.get("loginid")
-        login_pw = request.form.get("loginpw")
-        
-        results = validateLogin(login_id, login_pw)
-        
-        if len(results) > 0:
+        if "user" in session:
             
-            print("valid login credentials")
-            user = setUser(login_id,login_pw)
-            session["user"] = user.getUsername()
-            
-            return render_template("forumMain.html", name = session["user"])
+            print(session["user"])
+            return redirect(url_for('forumMain'))
+            #return redirect(url_for('forumMain'))
+        
         else:
+        
+            #take the user input id and password from the html form and store it for validation
+            login_id = request.form.get("loginid")
+            login_pw = request.form.get("loginpw")
             
-            print("invalid login credentials")
-            return render_template("index.html", error_message = "incorrect id or password")
-    else:         
+            results = validateLogin(login_id, login_pw)
+            
+            if len(results) > 0:
+                
+                print("valid login credentials")
+                user = setUser(login_id,login_pw)
+                session["user"] = user.getUsername()
+                
+                return redirect(url_for('forumMain'))
+                #return render_template("forumMain.html", name = session["user"])
+                
+            else:
+                
+                print("invalid login credentials")
+                return render_template("index.html", error_message = "incorrect id or password")
+    else:        
+
+        session.clear()
         return render_template("index.html")
 
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
+    
     if request.method == 'POST':
         
         regoId = request.form.get("regId")
@@ -126,11 +154,13 @@ def registration():
         else:
             
             addUser(regoId, regoUname, regoPword)
+            session.clear()
             return redirect(url_for('index'))
 
     else:
+            
         return render_template("registration.html")
-     
+ 
 
 @app.route("/userAdmin", methods=['GET', 'POST'])
 def userAdmin():
@@ -150,7 +180,8 @@ def userAdmin():
                     
                     
                     updatePassword(session["user"], newPword)  
-                    session.pop(session["user"], None)
+                    #session.pop(session["user"], None)
+                    session.clear()
                     return redirect(url_for('index'))
                    
                 else:
@@ -164,7 +195,28 @@ def userAdmin():
     
     else:
         return redirect(url_for('index'))
-
+    
+    
+    
+@app.route("/forumMain", methods=['GET', 'POST'])
+def forumMain():
+    
+    times = getPosts(10)
+    
+    if request.method == 'POST':
+        
+        subject = request.form.get("newSubject")
+        message = request.form.get("newMessage")
+        #img = request.form.get("filename")
+        
+        addForumPost(subject, message)
+        
+        return render_template("forumMain.html", name = session["user"], times = times)
+    
+    else:
+        
+        return render_template("forumMain.html", name = session["user"], times = times)
+        
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)
     
