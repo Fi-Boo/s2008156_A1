@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title> s2008156 Cloud Computing A1 2024 SP1 </title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> s2008156 Cloud Computing A1 2024 SP1 </title>
         <script src="{{ url_for('static', filename='script.js') }}"></script>
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
+</head>
     <body>
         <h1>New User Registration</h1>
         <form method="POST">
@@ -14,7 +16,7 @@
             <input type="text" id="regUsername" name="regUsername" required>{{ error_username }} <br>
             <label for="regPword">Password: </label>
             <input type="text" id="regPword" name="regPword" required>{{ error_password }}<br>
-            <input type="file" id="myFile" name="filename">
+            <input type="file" accept="image/*" id="myFile" name="filename" required>
             <input type="submit" value="Register"> 
             <h3> {{ error_message }} </h3>
         </form>           

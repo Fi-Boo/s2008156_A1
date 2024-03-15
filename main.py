@@ -1,12 +1,17 @@
 
 import datetime
 from flask import Flask, redirect, render_template, request, session, url_for
-from google.cloud import datastore
+from google.cloud import datastore, storage
 from google.cloud.datastore import query
 from google.cloud.datastore.query import PropertyFilter
-
+import os
+from werkzeug.utils import secure_filename
 
 datastore_client = datastore.Client()
+storage_client = storage.Client()
+
+bucket_name = "s2008156-cca1"
+bucket = storage_client.bucket(bucket_name)
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
@@ -100,7 +105,6 @@ def getPosts(number):
     times = query.fetch(limit=number)
     return times
 
-
 def getPostsByUser(user):
     query = datastore_client.query(kind="post")
     query.add_filter(filter = PropertyFilter("user", "=", user))
@@ -112,10 +116,25 @@ def getPostsByUser(user):
     
     return time
 
+def uploadImg(blobName, filePath):
+    blob = bucket.blob(blobName)
+    blob.upload_from_filename(filePath)
+
+
+def getIDfromName(user):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("user_name", "=", user))
+
+    for entity in query.fetch():
+        
+        return entity["id"]
+
+
 #FLASK RELATED
 
 app = Flask(__name__)
 app.secret_key = "helloworld"
+app.config['UPLOAD_FOLDER'] = "/static/img"
 
 #this routes the pages as per tutorial 
 @app.route("/", methods=['GET', 'POST'])
@@ -162,7 +181,7 @@ def registration():
         regoId = request.form.get("regId")
         regoUname = request.form.get("regUsername")
         regoPword = request.form.get("regPword")
-        
+        filename = request.form.get("filename")
 
         if (len(checkId(regoId)) > 0):
             
@@ -173,20 +192,26 @@ def registration():
             return render_template("registration.html", error_username = "The username already exists")
             
         else:
-            
-            addUser(regoId, regoUname, regoPword)
-            session.clear()
-            return redirect(url_for('index'))
-
+               
+            filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\static\\img\\"
+        profilePic = "profile" + regoId
+        source =  filepath + filename
+        uploadImg(profilePic, source)
+        addUser(regoId, regoUname, regoPword)
+        session.clear()
+        return redirect(url_for('index'))
+    
     else:
-            
-        return render_template("registration.html")
+           
+        return render_template("registration.html") 
  
 
 @app.route("/userAdmin", methods=['GET', 'POST'])
 def userAdmin():
     
     times = getPostsByUser(session["user"])
+    
+    imageSrc = "https://storage.cloud.google.com/s2008156-cca1/profile" + getIDfromName(session["user"])
     
     if "user" in session:
         
@@ -212,7 +237,7 @@ def userAdmin():
                 else:
                     
                     print("old password mismatch")
-                    return render_template("userAdmin.html", name = session["user"], error_oldPword = "incorrect password", times = times)  
+                    return render_template("userAdmin.html", name = session["user"], error_oldPword = "incorrect password", times = times, imageSrc = imageSrc)  
             
         elif request.method == 'GET':
             
@@ -221,7 +246,7 @@ def userAdmin():
             print(postID)
             
             
-            return render_template("userAdmin.html", name = session["user"], times = times)
+            return render_template("userAdmin.html", name = session["user"], times = times, imageSrc = imageSrc)
     
     else:
         
@@ -230,6 +255,8 @@ def userAdmin():
     
 @app.route("/forumMain", methods=['GET', 'POST'])
 def forumMain():
+    
+    imageSrc = "https://storage.cloud.google.com/s2008156-cca1/profile" + getIDfromName(session["user"])
     
     times = getPosts(10)
     
@@ -240,12 +267,8 @@ def forumMain():
         #img = request.form.get("filename")
         
         addForumPost(subject, message)
-        
-        return render_template("forumMain.html", name = session["user"], times = times)
-    
-    else:
-        
-        return render_template("forumMain.html", name = session["user"], times = times)
+            
+    return render_template("forumMain.html", name = session["user"], times = times, imageSrc = imageSrc)
         
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)
