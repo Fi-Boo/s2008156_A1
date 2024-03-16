@@ -8,18 +8,39 @@
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
     <body>
-        <h1> The Forum! </h1>
-        <h2> Enter if you dare </h2>
-        <form method="POST">
-            <label for="loginid">ID: </label>
-            <input type="text" id="loginid" name="loginid" required><br>
-            <label for="loginpw">Password: </label>
-            <input type="text" id="loginpw" name="loginpw" required><br>
-            <input type="submit" value="Login">
-            <h3> {{ error_message }} </h3>
-        </form>
-        <form action="{{ url_for('registration') }}">
-            <input type="submit" value="Register"> 
-        </form>
+        <nav>
+            <h1> The Forum! </h1>
+        </nav>
+        <div class="content">
+            <div class="outerBox">
+                <h2>User Login</h2>
+                <div id="loginBox">
+                    <form class="loginForm" method="POST">
+                        <label for="loginid">ID: </label>
+                        <input type="text" id="loginid" name="loginid" required>
+                        <label for="loginpw">Password: </label>
+                        <input type="text" id="loginpw" name="loginpw" required>
+                        <br>
+                        <div>
+                            <input type="submit" value="Login">
+                        </div>
+                        <br>
+                        <p> {{ error_message }} </p>
+                    </form>
+                    <form class="loginRego" action="{{ url_for('registration') }}">
+                        <br>
+                        <div>
+                            <input type="submit" value="Register"> 
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div>
+                <p>© Phi Van Lam Bui S2008156
+                <p>OUA 2024 SP1 - Cloud Computing (RMIT)
+            </div>
+        </footer>         
     </body>
 </html>
