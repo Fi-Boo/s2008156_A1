@@ -13,7 +13,7 @@ bucket_name = "s2008156-cca1"
 bucket = storage_client.bucket(bucket_name)
 bucketProfilePath = "https://storage.cloud.google.com/s2008156-cca1/profile"
 bucketPostPath = "https://storage.cloud.google.com/s2008156-cca1/"
-filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\s2008156_A1\\static\\images\\"
+filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\static\\images\\"
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
