@@ -17,20 +17,20 @@
                 
                 <div id="regoBox">
                     <form class="regoForm" method="POST">
-                        <br>
-                        <p> {{ error_message }} </p>
-                        <label for="regId">ID:</label>
-                        <input type="text" id="regId" name="regId" required> 
-                        <label for="regUsername">Username:</label>
-                        <input type="text" id="regUsername" name="regUsername" required>
-                        <label for="regPword">Password:</label>
-                        <input type="password" id="regPword" name="regPword" required>
+                        <label for="regId">ID: </label>
+                        <input type="text" id="regId" name="regId" required> {{ error_id }}
+                        <label for="regUsername">Username: </label>
+                        <input type="text" id="regUsername" name="regUsername" required>{{ error_username }}
+                        <label for="regPword">Password: </label>
+                        <input type="text" id="regPword" name="regPword" required>{{ error_password }}
                         <label for ="filename"> Avatar:</label>
                         <input type="file" accept="image/*" id="myFile" name="filename" required>
                         <br>
                         <div>
                             <input type="submit" value="Register"> 
                         </div>
+                        <br>
+                        <h3> {{ error_message }} </h3>
                     </form> 
                 </div>
             </div>

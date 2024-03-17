@@ -228,11 +228,11 @@ def registration():
 
         if (len(checkId(regoId)) > 0):
             
-            return render_template("registration.html", error_message = "The ID already exists")
+            return render_template("registration.html", error_id = "The ID already exists")
         
         elif (len(checkUname(regoUname)) > 0):
                 
-            return render_template("registration.html", error_message = "The username already exists")
+            return render_template("registration.html", error_username = "The username already exists")
             
         else:
              
