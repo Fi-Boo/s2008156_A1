@@ -4,8 +4,7 @@ from flask import Flask, redirect, render_template, request, session, url_for
 from google.cloud import datastore, storage
 from google.cloud.datastore import query
 from google.cloud.datastore.query import PropertyFilter
-import os
-from werkzeug.utils import secure_filename
+
 
 datastore_client = datastore.Client()
 storage_client = storage.Client()
@@ -115,7 +114,7 @@ def addForumPost(subject, message, image):
         postImage = bucketPostPath + image
         
     entity = datastore.Entity(key=datastore_client.key("post"), exclude_from_indexes=("subject", "message"))
-    entity.update({"user": session["user"], "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
+    entity.update({"user": session["user"], "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
     datastore_client.put(entity)
 
 def getPosts(number):
@@ -166,7 +165,7 @@ def editForumPost(postNumber, subject, message, image):
     user = datastore_client.get(key)
     user["subject"] = subject
     user["message"] = message
-    user["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    user["timestamp"] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     user["postImg"] = postImage
     datastore_client.put(user)
     print("successfully updated Post")
