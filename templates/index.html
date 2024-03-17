@@ -16,16 +16,16 @@
                 <h2>User Login</h2>
                 <div id="loginBox">
                     <form class="loginForm" method="POST">
-                        <br>
-                        <p> {{ error_message }} </p>
                         <label for="loginid">ID: </label>
                         <input type="text" id="loginid" name="loginid" required>
                         <label for="loginpw">Password: </label>
-                        <input type="password" id="loginpw" name="loginpw" required>
-                        <br><br><br>
+                        <input type="text" id="loginpw" name="loginpw" required>
+                        <br>
                         <div>
                             <input type="submit" value="Login">
                         </div>
+                        <br>
+                        <p> {{ error_message }} </p>
                     </form>
                     <form class="loginRego" action="{{ url_for('registration') }}">
                         <br>
