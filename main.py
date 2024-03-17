@@ -51,6 +51,7 @@ def validateLogin(id,password):
     
     return list(query.fetch())
 
+
 def setUser(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))

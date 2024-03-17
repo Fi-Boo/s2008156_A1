@@ -13,5 +13,4 @@ function loadEditBox(clicked_id){
             document.getElementById("editPostImg").src = document.getElementById("postImg" + clicked_id).src
             document.getElementById("postImgSrc").value = document.getElementById("postImg" + clicked_id).src
         }
-
     }
