@@ -13,7 +13,7 @@ bucket_name = "s2008156-cca1"
 bucket = storage_client.bucket(bucket_name)
 bucketProfilePath = "https://storage.cloud.google.com/s2008156-cca1/profile"
 bucketPostPath = "https://storage.cloud.google.com/s2008156-cca1/"
-filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\static\\images\\"
+filepath = "D:/Bachelor of IT - OUA/9. Cloud Computing/A1/s2008156_A1/static/images/"
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
@@ -50,7 +50,6 @@ def validateLogin(id,password):
     query.add_filter(filter = PropertyFilter("password", "=", password))
     
     return list(query.fetch())
-
 
 def setUser(id,password):
     query = datastore_client.query(kind="user")
@@ -228,11 +227,11 @@ def registration():
 
         if (len(checkId(regoId)) > 0):
             
-            return render_template("registration.html", error_id = "The ID already exists")
+            return render_template("registration.html", error_message = "The ID already exists")
         
         elif (len(checkUname(regoUname)) > 0):
                 
-            return render_template("registration.html", error_username = "The username already exists")
+            return render_template("registration.html", error_message = "The username already exists")
             
         else:
              
