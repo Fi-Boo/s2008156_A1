@@ -15,7 +15,7 @@ body {
 
 }
 
-nav, footer {
+header, footer {
     position: fixed;
     top:0;
     width: 100%;
@@ -46,8 +46,16 @@ footer p {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.forumContent, #userAdminContent {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
 
 }
+
 
 #loginBox, #regoBox {
     border-radius: 1rem;
@@ -62,7 +70,7 @@ input {
     text-align: center;
 }
 
-.loginForm, .regoForm, .loginRego {
+.loginForm, .regoForm, .loginRego, .postForm, .passwordChange {
     display: grid;
     grid-template-columns:25% 75%;
     grid-column-gap: 1rem;
@@ -75,7 +83,158 @@ input {
     margin: -0.1rem 3rem;
 }
 
+.passwordChange {
+    grid-template-columns:40% 60%;
+}
+
 label {
     font-weight: bold;
     text-align: right;
+}
+
+.profileImg {
+    border-radius: 50%;
+    border: 1px solid grey;
+    max-width: 120px;
+    max-height: 120px;
+}
+
+.profileBlock {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-areas: 
+        'greeting profile'
+        'logout profile';
+    margin-top: 8rem;
+}
+
+.greeting {
+    grid-area: greeting;
+    
+}
+
+.profileImg, #userAdminImage {
+    grid-area: profile;
+}
+
+.logoutBtn, .passwordChange {
+    grid-area: logout;
+}
+
+#newMsgBlock, #editMsgBlock {
+    border: 1px solid #d4af37;
+    border-radius: 1rem;
+    min-width: 30rem;
+    width: 50rem;
+    padding: 2rem;
+}
+
+.postForm {
+    grid-template-columns:15% 85%;
+}
+
+.postForm input, textarea {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.25rem 1rem;
+}
+
+#newMessage, #editPostMessage {
+    height: 10rem;
+}
+
+a:link, a:visited {
+    text-decoration: none;
+    color: #d4af37;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: grey;
+}
+
+a:active {
+    color: white;
+}
+
+.postBlockHead, .postBlockBody {
+    min-width: 30rem;
+    width: 50rem;
+    padding: 1rem 2rem;
+}
+
+.postBlockHead {
+    display: grid;
+    grid-template-columns: 10% 90%;
+    grid-template-rows: 80% 20%;
+    grid-template-areas:
+        'image subject'
+        'user timestamp';
+    border-radius: 1rem 1rem 0 0;
+    background-image: linear-gradient(#d4af37, black);
+    color: white;
+}
+
+.postProfileImg {
+    grid-area: image;
+}
+
+.postUser {
+    grid-area: user;
+    text-align: center;
+    font-size: 0.75rem;
+    margin-right: 1rem;
+
+}
+
+.postSubject {
+    grid-area: subject;
+    text-align: left;
+    color: white;
+    font-size: 2rem;
+    margin: 0;
+}
+
+.postTime {
+    grid-area: timestamp;
+    text-align: left;
+    font-size: 0.75rem;
+}
+
+.postBlockBody {
+    max-height: fit-content;
+    min-height: 5rem;
+    text-align: left;
+    border-radius: 0 0 1rem 1rem;
+    margin-bottom: 0.25rem;
+    background-color: black;
+}
+
+.postBlockBody p, .postImg {
+    padding-left: 5rem;
+    line-height: 2rem
+}
+
+.postProfileImg {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+}
+
+#userAdminImage {
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+}
+
+#editPostSubject {
+    color: black;
+}
+
+#editPostTime {
+    text-align: left;
+}
+
+#editPostImg {
+    width: 3rem;
 }

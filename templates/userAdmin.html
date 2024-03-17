@@ -8,28 +8,78 @@
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
     <body>
-        <h1> {{ name }} </h1>
-        <img src="{{ imageSrc }}"><br>
-        <form method="POST">
-            <label for="oldPword">Old Password: </label>
-            <input type="text" id="oldPword" name="oldPword" required> {{ error_oldPword }} <br>
-            <label for="newPword">New Password: </label>
-            <input type="text" id="newPword" name="newPword" required><br>
-            <input type="submit" value="Change Password">
-        </form>
-        <br>
-        <div>
-            {% for time in times %}
-            <form >
-                <label>Post #</lobal>
-                <input type="text" id="postID" name= "postID" value="{{loop.index}}">{{loop.index}}
-                Timestamp: {{ time['timestamp'] }} <br>
-                Subject: {{ time['subject'] }} <br>
-                Message: {{ time['message'] }} <br>
-                <input type="submit" value="Edit"><br>
-            <form>
-            {% endfor %}
+        <header>
+            <h1> The Forum! </h1>
+        </header>
+        <div id="userAdminContent">
+            <div class="profileBlock">
+                <h1 class="greeting"> {{ name }} </h1>
+                <img id="userAdminImage" src="{{ imageSrc }}">
+                <form class ="passwordChange" method="POST">
+                    
+                    <label for="oldPword">Old Password: </label>
+                    <input type="password" id="oldPword" name="oldPword" required>
+                    <label for="newPword">New Password: </label>
+                    <input type="text" id="newPword" name="newPword" required><br>
+                    <div>
+                        <input type="submit" value="Change Password">
+                        <input type="hidden" name= "postID" value="0">
+                        <br>
+                        {{error_message}}
+                        
+                    </div>
+                </form><br>
+            </div>
+            <br>
+            <div id="editMsgBlock">
+                <div class="outerBox">
+                    <h2>Edit Post</h2>
+                    <form class="postForm" method="POST">
+                        <div><input type="hidden" id="postID" name= "postID" value=""></div>
+                        <div id="editPostTime"></div>
+                        <label for="newSubject">Subject: </label>
+                        <input type="text" id="editPostSubject"  name="postSubject" value="" required disabled>
+                        <label for="newMessage">Message: </label>
+                        <textarea type="text" id="editPostMessage" name="editPostMessage" value="" required disabled></textarea>
+                        <div><div><input type="hidden" id="postImgSrc" name= "postImgSrc" value=""></div></div>
+                        <img class="postImg" id= "editPostImg" src="" >
+                        <label for="filename">Image: </label>
+                        <input type="file" accept="image/*" id="myFile" name="filename" disabled>
+                        <br>
+                        <div>
+                            <input type="submit" id="editConfirmBtn" value="Confirm Edit" disabled>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        
+            <div class="recentMsgsBlock">
+                <h2> History </h2>
+                {% for time in times %}
 
+                <div class="postBlockHead">
+                    <button class="postProfileImg" id="{{loop.index}}" type="button" value="Edit" onClick="loadEditBox(this.id)">Edit</button>
+                    <p class="postSubject" id="postSubject{{loop.index}}">{{ time['subject'] }}
+                    <div class="postUser"></div>
+                    <p class="postTime" id="postTime{{loop.index}}">Posted on: {{ time['timestamp'] }}
+                </div> 
+                <div class="postBlockBody">       
+                    <p id="postMessage{{loop.index}}">{{ time['message'] }}</p>
+                    <br>
+                    {% if time['postImg'] != "NA" %}
+                    <img class="postImg" id= "postImg{{loop.index}}" src="{{ time['postImg'] }}">
+                    {% endif %}
+                </div>
+
+                {% endfor %}
+
+            </div>
         </div>
+        <footer>
+            <div>
+                <p>© Phi Van Lam Bui S2008156
+                <p>OUA 2024 SP1 - Cloud Computing (RMIT)
+            </div>
+        </footer> 
     </body>
 </html>

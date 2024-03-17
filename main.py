@@ -12,6 +12,9 @@ storage_client = storage.Client()
 
 bucket_name = "s2008156-cca1"
 bucket = storage_client.bucket(bucket_name)
+bucketProfilePath = "https://storage.cloud.google.com/s2008156-cca1/profile"
+bucketPostPath = "https://storage.cloud.google.com/s2008156-cca1/"
+filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\s2008156_A1\\static\\images\\"
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
@@ -91,11 +94,28 @@ def addUser(id, username, password):
     entity.update({"id": id, "user_name": username, "password": password})
     datastore_client.put(entity)
 
+def getIDfromName(user):
+    query = datastore_client.query(kind="user")
+    query.add_filter(filter = PropertyFilter("user_name", "=", user))
 
-def addForumPost(subject, message):
+    for entity in query.fetch():
+        
+        return entity["id"]
+
+
+def addForumPost(subject, message, image):
     
+    imageSrc = getProfileImgSrc(session['user'])
+    
+    if image == "":
+        postImage = "NA"
+    else:
+        source =  filepath + image
+        uploadImg(image, source)
+        postImage = bucketPostPath + image
+        
     entity = datastore.Entity(key=datastore_client.key("post"), exclude_from_indexes=("subject", "message"))
-    entity.update({"user": session["user"], "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message})
+    entity.update({"user": session["user"], "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
     datastore_client.put(entity)
 
 def getPosts(number):
@@ -120,14 +140,37 @@ def uploadImg(blobName, filePath):
     blob = bucket.blob(blobName)
     blob.upload_from_filename(filePath)
 
+def getProfileImgSrc(user):
+    
+    return bucketProfilePath + getIDfromName(user)
 
-def getIDfromName(user):
-    query = datastore_client.query(kind="user")
-    query.add_filter(filter = PropertyFilter("user_name", "=", user))
-
-    for entity in query.fetch():
+def editForumPost(postNumber, subject, message, image):
+    
+    if image == "NA":
         
-        return entity["id"]
+        postImage = "NA"
+        
+    elif image[0:5] == "https":
+        
+        postImage = image
+        
+    else:
+        
+        source =  filepath + image
+        uploadImg(image, source)
+        postImage = bucketPostPath + image
+  
+    postList = getPostsByUser(session['user'])  
+    entity = postList[int(postNumber)-1]
+    key = entity.key
+    user = datastore_client.get(key)
+    user["subject"] = subject
+    user["message"] = message
+    user["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    user["postImg"] = postImage
+    datastore_client.put(user)
+    print("successfully updated Post")
+
 
 
 #FLASK RELATED
@@ -192,14 +235,13 @@ def registration():
             return render_template("registration.html", error_message = "The username already exists")
             
         else:
-               
-            filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\static\\img\\"
-        profilePic = "profile" + regoId
-        source =  filepath + filename
-        uploadImg(profilePic, source)
-        addUser(regoId, regoUname, regoPword)
-        session.clear()
-        return redirect(url_for('index'))
+             
+            profilePic = "profile" + regoId
+            source =  filepath + filename
+            uploadImg(profilePic, source)
+            addUser(regoId, regoUname, regoPword)
+            session.clear()
+            return redirect(url_for('index'))
     
     else:
            
@@ -211,34 +253,53 @@ def userAdmin():
     
     times = getPostsByUser(session["user"])
     
-    imageSrc = "https://storage.cloud.google.com/s2008156-cca1/profile" + getIDfromName(session["user"])
+    imageSrc = getProfileImgSrc(session["user"])
     
     if "user" in session:
         
         if request.method == 'POST':
             
+            selection = request.form.get("postID")
             
-            print("POST")
-            oldPword = request.form.get("oldPword")
-            newPword = request.form.get("newPword")
+            if selection == 0:
             
-            
-            tempList = checkUname(session["user"])
-            
-            for item in tempList:
-                if item["password"] == oldPword:
+                oldPword = request.form.get("oldPword")
+                newPword = request.form.get("newPword")
+                
+                tempList = checkUname(session["user"])
+                
+                for item in tempList:
+                    if item["password"] == oldPword:
+                        
+                        
+                        updatePassword(session["user"], newPword)  
+                        #session.pop(session["user"], None)
+                        session.clear()
+                        return redirect(url_for('index'))
                     
+                    else:
+                        
+                        print("old password mismatch")
+                        return render_template("userAdmin.html", name = session["user"], error_message = "incorrect password", times = times, imageSrc = imageSrc)  
+            
+            else:
+                
+                postNumber = request.form.get("postID")
+                subject = request.form.get("postSubject")
+                message = request.form.get("editPostMessage")
+                postOldImg = request.form.get("postImgSrc")
+                postNewImg = request.form.get("filename")
+
+                if postNewImg != "":
                     
-                    updatePassword(session["user"], newPword)  
-                    #session.pop(session["user"], None)
-                    session.clear()
-                    return redirect(url_for('index'))
-                   
+                    editForumPost(postNumber, subject, message, postNewImg)
+                
                 else:
-                    
-                    print("old password mismatch")
-                    return render_template("userAdmin.html", name = session["user"], error_oldPword = "incorrect password", times = times, imageSrc = imageSrc)  
-            
+
+                    editForumPost(postNumber, subject, message, postOldImg)
+                
+                return redirect(url_for('forumMain')) 
+               
         elif request.method == 'GET':
             
             print("GET")
@@ -256,7 +317,7 @@ def userAdmin():
 @app.route("/forumMain", methods=['GET', 'POST'])
 def forumMain():
     
-    imageSrc = "https://storage.cloud.google.com/s2008156-cca1/profile" + getIDfromName(session["user"])
+    imageSrc = getProfileImgSrc(session["user"])
     
     times = getPosts(10)
     
@@ -264,9 +325,9 @@ def forumMain():
         
         subject = request.form.get("newSubject")
         message = request.form.get("newMessage")
-        #img = request.form.get("filename")
+        image = request.form.get("filename")
         
-        addForumPost(subject, message)
+        addForumPost(subject, message, image)
             
     return render_template("forumMain.html", name = session["user"], times = times, imageSrc = imageSrc)
         

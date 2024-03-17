@@ -8,33 +8,61 @@
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
     <body>
-        <h1> Hello <a href="{{ url_for('userAdmin') }}"> {{ name }} </a></h1>
-        <img src="{{ imageSrc }}"><br>
-        <form action="{{ url_for('index') }}" method="GET">
-            <input type="submit" value="Logout">
-        </form><br>
-        <div id="newMsgBlock">
-            <form method="POST">
-                <label for="newSubject">Subject: </label>
-                <input type="text" id="newSubject" name="newSubject" required><br>
-                <label for="newMessage">Message: </label>
-                <input type="text" id="newMessage" name="newMessage" required><br>
-                <input type="file" id="myFile" name="filename">
-                <input type="submit" value="Post">
-            </form>
-        </div>
+        <header>
+            <h1> The Forum! </h1>
+        </header>
+        <div class="forumContent">
+            <div class="profileBlock">
+                <h1 class="greeting"> Hello <a href="{{ url_for('userAdmin') }}"> {{ name }} </a></h1>
+                <img class="profileImg" src="{{ imageSrc }}"><br>
+                <form class="logoutBtn" action="{{ url_for('index') }}" method="GET">
+                    <input type="submit" value="Logout">
+                </form><br>
+            </div>
+            <div id="newMsgBlock">
+                <div class="outerBox">
+                    <h2>New Post</h2>
+                    <form class="postForm" method="POST">
+                        <label for="newSubject">Subject: </label>
+                        <input type="text" id="newSubject" name="newSubject" required>
+                        <label for="newMessage">Message: </label>
+                        <textarea type="text" id="newMessage" name="newMessage" required></textarea>
+                        <label for="filename">Image: </label>
+                        <input type="file" accept="image/*" id="myFile" name="filename">
+                        <br>
+                        <div>
+                            <input type="submit" value="Post">
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-        <div id="recentMsgsBlock">
-
-            <h2>Last 10 posts</h2>
+            <div class="recentMsgsBlock">
+                <h2>Recent Posts</h2>
+                
                 {% for time in times %}
-                User: {{ time['user'] }} <br>
-                Timestamp: {{ time['timestamp'] }} <br>
-                Subject: {{ time['subject'] }} <br>
-                Message: {{ time['message'] }} <br>
-                {% endfor %}
+                
+                <div class="postBlockHead">
+                    <img class="postProfileImg" src="{{ time['profileImg'] }}">
+                    <p class="postUser"><bold>{{ time['user'] }}</bold>
+                    <h3 class="postSubject">{{ time['subject'] }}</h3>
+                    <p class ="postTime"></bold>{{ time['timestamp'] }}</bold>
+                </div>
+                <div class="postBlockBody">
+                    <p>{{ time['message'] }}<br>
+                        {% if time['postImg'] != "NA" %}
+                        <img class="postImg" src="{{ time['postImg'] }}">
+                        {% endif %}
+                </div>       
+                {% endfor %}       
+            </div>
         </div>
-
+        <footer>
+            <div>
+                <p>© Phi Van Lam Bui S2008156
+                <p>OUA 2024 SP1 - Cloud Computing (RMIT)
+            </div>
+        </footer>   
 
     </body>
 </html>
