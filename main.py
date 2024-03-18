@@ -2,7 +2,7 @@
 import datetime
 from flask import Flask, redirect, render_template, request, session, url_for
 from google.cloud import datastore, storage
-from google.cloud.datastore import query
+#from google.cloud.datastore import query
 from google.cloud.datastore.query import PropertyFilter
 
 
@@ -102,16 +102,15 @@ def getIDfromName(user):
         return entity["id"]
 
 
-def addForumPost(subject, message, image):
+def addForumPost(subject, message, file):
     
     imageSrc = getProfileImgSrc(session['user'])
     
-    if image == "":
+    if file == "NA":
         postImage = "NA"
     else:
-        source =  filepath + image
-        uploadImg(image, source)
-        postImage = bucketPostPath + image
+        uploadImg("post", "NA", file)
+        postImage = bucketPostPath + file.filename
         
     entity = datastore.Entity(key=datastore_client.key("post"), exclude_from_indexes=("subject", "message"))
     entity.update({"user": session["user"], "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
@@ -135,29 +134,40 @@ def getPostsByUser(user):
     
     return time
 
-def uploadImg(blobName, filePath):
-    blob = bucket.blob(blobName)
-    blob.upload_from_filename(filePath)
+def uploadImg(type, regoId, file):
+    
+    if type == "profile":
+        
+        imageName = "profile" + regoId
+     
+    else:
+        
+        imageName = file.filename
+    
+    blob = bucket.blob(imageName)
+    blob.upload_from_file(file)
 
 def getProfileImgSrc(user):
     
     return bucketProfilePath + getIDfromName(user)
 
-def editForumPost(postNumber, subject, message, image):
+def editForumPost(postNumber, subject, message, postOldImg, postNewImg):
     
-    if image == "NA":
+    postImage=""
+    
+    if postNewImg == "NA":
         
         postImage = "NA"
         
-    elif image[0:5] == "https":
+        if postOldImg[0:5] == "https":
         
-        postImage = image
+            postImage = postOldImg
         
     else:
-        
-        source =  filepath + image
-        uploadImg(image, source)
-        postImage = bucketPostPath + image
+
+        uploadImg("post", "NA", postNewImg)
+        postImage = bucketPostPath + postNewImg.filename
+        print(postImage)
   
     postList = getPostsByUser(session['user'])  
     entity = postList[int(postNumber)-1]
@@ -168,6 +178,8 @@ def editForumPost(postNumber, subject, message, image):
     user["timestamp"] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     user["postImg"] = postImage
     datastore_client.put(user)
+    
+    print(user)
     print("successfully updated Post")
 
 
@@ -204,7 +216,6 @@ def index():
                 session["user"] = user.getUsername()
                 
                 return redirect(url_for('forumMain'))
-                #return render_template("forumMain.html", name = session["user"])
                 
             else:
                 
@@ -223,7 +234,7 @@ def registration():
         regoId = request.form.get("regId")
         regoUname = request.form.get("regUsername")
         regoPword = request.form.get("regPword")
-        filename = request.form.get("filename")
+        file = request.files["filename"]
 
         if (len(checkId(regoId)) > 0):
             
@@ -235,9 +246,7 @@ def registration():
             
         else:
              
-            profilePic = "profile" + regoId
-            source =  filepath + filename
-            uploadImg(profilePic, source)
+            uploadImg("profile", regoId, file)
             addUser(regoId, regoUname, regoPword)
             session.clear()
             return redirect(url_for('index'))
@@ -260,8 +269,9 @@ def userAdmin():
             
             selection = request.form.get("postID")
             
-            if selection == 0:
-            
+            if selection == "0":
+                
+                print("got this far")
                 oldPword = request.form.get("oldPword")
                 newPword = request.form.get("newPword")
                 
@@ -272,7 +282,6 @@ def userAdmin():
                         
                         
                         updatePassword(session["user"], newPword)  
-                        #session.pop(session["user"], None)
                         session.clear()
                         return redirect(url_for('index'))
                     
@@ -281,21 +290,21 @@ def userAdmin():
                         print("old password mismatch")
                         return render_template("userAdmin.html", name = session["user"], error_message = "incorrect password", times = times, imageSrc = imageSrc)  
             
-            else:
+            elif selection =="1":
                 
                 postNumber = request.form.get("postID")
                 subject = request.form.get("postSubject")
                 message = request.form.get("editPostMessage")
                 postOldImg = request.form.get("postImgSrc")
-                postNewImg = request.form.get("filename")
+                postNewImg = request.files["filename"]
 
-                if postNewImg != "":
+                try:
                     
-                    editForumPost(postNumber, subject, message, postNewImg)
-                
-                else:
+                    editForumPost(postNumber, subject, message, postOldImg, postNewImg)
+                    
+                except:
 
-                    editForumPost(postNumber, subject, message, postOldImg)
+                    editForumPost(postNumber, subject, message, postOldImg, "NA")
                 
                 return redirect(url_for('forumMain')) 
                
@@ -324,9 +333,15 @@ def forumMain():
         
         subject = request.form.get("newSubject")
         message = request.form.get("newMessage")
-        image = request.form.get("filename")
-        
-        addForumPost(subject, message, image)
+        file = request.files["filename"]
+
+        try: 
+            
+            addForumPost(subject, message, file)
+            
+        except:
+
+            addForumPost(subject, message, "NA")
             
     return render_template("forumMain.html", name = session["user"], times = times, imageSrc = imageSrc)
         

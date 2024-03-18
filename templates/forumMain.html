@@ -15,14 +15,14 @@
             <div class="profileBlock">
                 <h1 class="greeting"> Hello <a href="{{ url_for('userAdmin') }}"> {{ name }} </a></h1>
                 <img class="profileImg" src="{{ imageSrc }}"><br>
-                <form class="logoutBtn" action="{{ url_for('index') }}" method="GET">
+                <form class="logoutBtn" action="{{ url_for('index') }}" enctype="multipart/form-data" method="GET">
                     <input type="submit" value="Logout">
                 </form><br>
             </div>
             <div id="newMsgBlock">
                 <div class="outerBox">
                     <h2>New Post</h2>
-                    <form class="postForm" method="POST">
+                    <form class="postForm" enctype="multipart/form-data" method="POST">
                         <label for="newSubject">Subject: </label>
                         <input type="text" id="newSubject" name="newSubject" required>
                         <label for="newMessage">Message: </label>

@@ -15,7 +15,7 @@
             <div class="profileBlock">
                 <h1 class="greeting"> {{ name }} </h1>
                 <img id="userAdminImage" src="{{ imageSrc }}">
-                <form class ="passwordChange" method="POST">
+                <form class ="passwordChange" enctype="multipart/form-data" method="POST">
                     
                     <label for="oldPword">Old Password: </label>
                     <input type="password" id="oldPword" name="oldPword" required>
@@ -35,7 +35,7 @@
             <div id="editMsgBlock">
                 <div class="outerBox">
                     <h2>Edit Post</h2>
-                    <form class="postForm" method="POST">
+                    <form class="postForm" enctype="multipart/form-data" method="POST">
                         <div><input type="hidden" id="postID" name= "postID" value=""></div>
                         <div id="editPostTime"></div>
                         <label for="newSubject">Subject: </label>
@@ -45,7 +45,7 @@
                         <div><div><input type="hidden" id="postImgSrc" name= "postImgSrc" value=""></div></div>
                         <img class="postImg" id= "editPostImg" src="" >
                         <label for="filename">Image: </label>
-                        <input type="file" accept="image/*" id="myFile" name="filename" disabled>
+                        <input type="file" accept="image/*" id="myFile" name="filename" >
                         <br>
                         <div>
                             <input type="submit" id="editConfirmBtn" value="Confirm Edit" disabled>
@@ -68,7 +68,9 @@
                     <p id="postMessage{{loop.index}}">{{ time['message'] }}</p>
                     <br>
                     {% if time['postImg'] != "NA" %}
-                    <img class="postImg" id= "postImg{{loop.index}}" src="{{ time['postImg'] }}">
+                    <img class="postImg" id= "postImg{{loop.index}}" src="{{ time['postImg'] }}" style="visibility: visible">
+                    {% else%}
+                    <img class="postImg" id= "postImg{{loop.index}}" src="{{ time['postImg'] }}" style="visibility: hidden">
                     {% endif %}
                 </div>
 
