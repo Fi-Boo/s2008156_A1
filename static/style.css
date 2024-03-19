@@ -242,3 +242,16 @@ a:active {
 #editPostImg {
     width: 3rem;
 }
+
+header a:link, header a:visited {
+    color: black;
+}
+
+header a:active, header a:hover {
+    color: black;
+    font-weight: bold;
+}
+
+header a:active {
+    color: red;
+}
