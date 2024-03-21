@@ -1,8 +1,9 @@
+# Lam Phi Van Bui s2008156
+# Cloud Computer SP1 2024 Assignment 1- OUA (RMIT)
 
 import datetime
 from flask import Flask, redirect, render_template, request, session, url_for
 from google.cloud import datastore, storage
-#from google.cloud.datastore import query
 from google.cloud.datastore.query import PropertyFilter
 
 
@@ -11,8 +12,10 @@ storage_client = storage.Client()
 
 bucket_name = "s2008156-cca1"
 bucket = storage_client.bucket(bucket_name)
-bucketProfilePath = "https://storage.cloud.google.com/s2008156-cca1/profile"
 bucketPostPath = "https://storage.cloud.google.com/s2008156-cca1/"
+bucketProfilePath = bucketPostPath + "profile"
+
+#hardcoded value for testing and presentation
 filepath = "D:/Bachelor of IT - OUA/9. Cloud Computing/A1/s2008156_A1/static/images/"
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
@@ -37,6 +40,8 @@ class User:
     def setUsername(self, username):
         self.username = username
         
+
+#class for post
 class Post:
     def __init__ (self, user, timestamp, subject, message):
         self.user = user
@@ -44,6 +49,7 @@ class Post:
         self.subject = subject
         self.message = message
 
+#Login validation based on user input id and password
 def validateLogin(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -51,6 +57,7 @@ def validateLogin(id,password):
     
     return list(query.fetch())
 
+#function that sets logged in user. For use with pupulating Session ID
 def setUser(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -61,19 +68,22 @@ def setUser(id,password):
         user = User(entity["id"],entity["user_name"],entity["password"])
         
         return user
-    
+
+#function that checks if user input ID is already in use
 def checkId(id):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
 
     return list(query.fetch())
 
+#function that checks if user input username is already in use
 def checkUname(username):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("user_name", "=", username))
 
     return list(query.fetch())
 
+#function that updates user password. Takes valid username and user input password
 def updatePassword(username, newPword):
     
     with datastore_client.transaction():
@@ -87,12 +97,14 @@ def updatePassword(username, newPword):
             user["password"] = newPword
             datastore_client.put(user)      
 
+#function that adds a new user. Takes valid user input for ID, username, password
 def addUser(id, username, password):
     
     entity = datastore.Entity(key=datastore_client.key("user"))
     entity.update({"id": id, "user_name": username, "password": password})
     datastore_client.put(entity)
 
+#function that returns an ID, based on valid username
 def getIDfromName(user):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("user_name", "=", user))
@@ -101,7 +113,7 @@ def getIDfromName(user):
         
         return entity["id"]
 
-
+#function to add a new Forum post. Takes subject, message and file (optional)
 def addForumPost(subject, message, file):
     
     imageSrc = getProfileImgSrc(session['user'])
@@ -116,6 +128,7 @@ def addForumPost(subject, message, file):
     entity.update({"user": session["user"], "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
     datastore_client.put(entity)
 
+#function that returns a post based on user post selection when they click on the posts Edit button
 def getPosts(number):
     query = datastore_client.query(kind="post")
     query.order = ["-timestamp"]
@@ -123,6 +136,7 @@ def getPosts(number):
     times = query.fetch(limit=number)
     return times
 
+#function that returns a list of posts based on the logged in user
 def getPostsByUser(user):
     query = datastore_client.query(kind="post")
     query.add_filter(filter = PropertyFilter("user", "=", user))
@@ -134,6 +148,7 @@ def getPostsByUser(user):
     
     return time
 
+#function to upload an image to Google Bucket. Filename is altered if the image is for the profile pic.
 def uploadImg(type, regoId, file):
     
     if type == "profile":
@@ -147,10 +162,12 @@ def uploadImg(type, regoId, file):
     blob = bucket.blob(imageName)
     blob.upload_from_file(file)
 
+#function that returns the public URL link for a profiles image stored in Google Bucket
 def getProfileImgSrc(user):
     
     return bucketProfilePath + getIDfromName(user)
 
+#function to edit a user post. Takes a post number, subject, message, old image URL (optional), new image file(optional)
 def editForumPost(postNumber, subject, message, postOldImg, postNewImg):
     
     postImage=""
@@ -190,7 +207,7 @@ app = Flask(__name__)
 app.secret_key = "helloworld"
 app.config['UPLOAD_FOLDER'] = "/static/img"
 
-#this routes the pages as per tutorial 
+# Main page
 @app.route("/", methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -199,11 +216,9 @@ def index():
             
             print(session["user"])
             return redirect(url_for('forumMain'))
-            #return redirect(url_for('forumMain'))
         
         else:
         
-            #take the user input id and password from the html form and store it for validation
             login_id = request.form.get("loginid")
             login_pw = request.form.get("loginpw")
             
@@ -226,6 +241,7 @@ def index():
         session.clear()
         return render_template("index.html")
 
+# Registration Page
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
     
@@ -255,7 +271,7 @@ def registration():
            
         return render_template("registration.html") 
  
-
+# user admin page
 @app.route("/userAdmin", methods=['GET', 'POST'])
 def userAdmin():
     
@@ -321,7 +337,7 @@ def userAdmin():
         
         return redirect(url_for('index'))
     
-    
+# forum Main page    
 @app.route("/forumMain", methods=['GET', 'POST'])
 def forumMain():
     
