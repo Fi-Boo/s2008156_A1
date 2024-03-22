@@ -255,3 +255,19 @@ header a:active, header a:hover {
 header a:active {
     color: red;
 }
+
+.postEditBtn {
+    margin-right: 1rem;
+    border-radius: 20%;
+    background-image: linear-gradient(silver, black);
+    color: #d4af37;
+}
+
+button:hover {
+    background-image: linear-gradient(white, silver);
+    color: black;
+}
+
+button:active {
+    background: #d4af37;
+}

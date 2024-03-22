@@ -37,7 +37,7 @@
                     <h2>Edit Post</h2>
                     <form class="postForm" enctype="multipart/form-data" method="POST">
                         <div><input type="hidden" id="postID" name= "postID" value=""></div>
-                        <div id="editPostTime"></div>
+                        <div id="editPostTime">Posted on: </div>
                         <label for="newSubject">Subject: </label>
                         <input type="text" id="editPostSubject"  name="postSubject" value="" required disabled>
                         <label for="newMessage">Message: </label>
@@ -59,7 +59,7 @@
                 {% for time in times %}
 
                 <div class="postBlockHead">
-                    <button class="postProfileImg" id="{{loop.index}}" type="button" value="Edit" onClick="loadEditBox(this.id)">Edit</button>
+                    <button class="postEditBtn" id="{{loop.index}}" type="button" onClick="loadEditBox(this.id)">EDIT</button>
                     <p class="postSubject" id="postSubject{{loop.index}}">{{ time['subject'] }}
                     <div class="postUser"></div>
                     <p class="postTime" id="postTime{{loop.index}}">Posted on: {{ time['timestamp'] }}
