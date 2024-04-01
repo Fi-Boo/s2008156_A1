@@ -145,7 +145,7 @@ def getProfileImgSrc(user):
 
 def editForumPost(postNumber, subject, message, image):
     
-    if image == "NA":
+    if image == "":
         
         postImage = "NA"
         
