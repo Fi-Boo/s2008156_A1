@@ -9,21 +9,21 @@
 </head>
     <body>
         <header>
-            <h1> The Forum! </h1>
+            <h1> The Forum! </h1> <button><a href="https://s2008156-cca1.ts.r.appspot.com/">TASK 1</a></button> <button><a href="https://s2008156-cca1-2.ts.r.appspot.com/">TASK 2</a></button>
         </header>
         <div class="content">
             <div class="outerBox">
                 <h2> Registration</h2>
                 
                 <div id="regoBox">
-                    <form class="regoForm" method="POST">
+                    <form class="regoForm" enctype="multipart/form-data" method="POST">
                         <br>
                         <p> {{ error_message }} </p>
-                        <label for="regId">ID:</label>
+                        <label for="regId">ID: </label>
                         <input type="text" id="regId" name="regId" required> 
-                        <label for="regUsername">Username:</label>
+                        <label for="regUsername">Username: </label>
                         <input type="text" id="regUsername" name="regUsername" required>
-                        <label for="regPword">Password:</label>
+                        <label for="regPword">Password: </label>
                         <input type="password" id="regPword" name="regPword" required>
                         <label for ="filename"> Avatar:</label>
                         <input type="file" accept="image/*" id="myFile" name="filename" required>
@@ -42,4 +42,5 @@
             </div>
         </footer>           
     </body>
+    
 </html>

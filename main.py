@@ -1,8 +1,9 @@
+# Lam Phi Van Bui s2008156
+# Cloud Computer SP1 2024 Assignment 1- OUA (RMIT)
 
 import datetime
 from flask import Flask, redirect, render_template, request, session, url_for
 from google.cloud import datastore, storage
-from google.cloud.datastore import query
 from google.cloud.datastore.query import PropertyFilter
 
 
@@ -11,9 +12,11 @@ storage_client = storage.Client()
 
 bucket_name = "s2008156-cca1"
 bucket = storage_client.bucket(bucket_name)
-bucketProfilePath = "https://storage.cloud.google.com/s2008156-cca1/profile"
 bucketPostPath = "https://storage.cloud.google.com/s2008156-cca1/"
-filepath = "D:\\Bachelor of IT - OUA\\9. Cloud Computing\\A1\\s2008156_A1\\static\\images\\"
+bucketProfilePath = bucketPostPath + "profile"
+
+#hardcoded value for testing and presentation
+filepath = "D:/Bachelor of IT - OUA/9. Cloud Computing/A1/s2008156_A1/static/images/"
 
 #went with an object for the users. This will probably be obselete once i hook up datastore
 class User:
@@ -37,6 +40,8 @@ class User:
     def setUsername(self, username):
         self.username = username
         
+
+#class for post
 class Post:
     def __init__ (self, user, timestamp, subject, message):
         self.user = user
@@ -44,6 +49,7 @@ class Post:
         self.subject = subject
         self.message = message
 
+#Login validation based on user input id and password
 def validateLogin(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -51,6 +57,7 @@ def validateLogin(id,password):
     
     return list(query.fetch())
 
+#function that sets logged in user. For use with pupulating Session ID
 def setUser(id,password):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
@@ -61,19 +68,22 @@ def setUser(id,password):
         user = User(entity["id"],entity["user_name"],entity["password"])
         
         return user
-    
+
+#function that checks if user input ID is already in use
 def checkId(id):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("id", "=", id))
 
     return list(query.fetch())
 
+#function that checks if user input username is already in use
 def checkUname(username):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("user_name", "=", username))
 
     return list(query.fetch())
 
+#function that updates user password. Takes valid username and user input password
 def updatePassword(username, newPword):
     
     with datastore_client.transaction():
@@ -87,12 +97,14 @@ def updatePassword(username, newPword):
             user["password"] = newPword
             datastore_client.put(user)      
 
+#function that adds a new user. Takes valid user input for ID, username, password
 def addUser(id, username, password):
     
     entity = datastore.Entity(key=datastore_client.key("user"))
     entity.update({"id": id, "user_name": username, "password": password})
     datastore_client.put(entity)
 
+#function that returns an ID, based on valid username
 def getIDfromName(user):
     query = datastore_client.query(kind="user")
     query.add_filter(filter = PropertyFilter("user_name", "=", user))
@@ -101,22 +113,22 @@ def getIDfromName(user):
         
         return entity["id"]
 
-
-def addForumPost(subject, message, image):
+#function to add a new Forum post. Takes subject, message and file (optional)
+def addForumPost(subject, message, file):
     
     imageSrc = getProfileImgSrc(session['user'])
     
-    if image == "":
+    if file == "NA":
         postImage = "NA"
     else:
-        source =  filepath + image
-        uploadImg(image, source)
-        postImage = bucketPostPath + image
+        uploadImg("post", "NA", file)
+        postImage = bucketPostPath + file.filename
         
     entity = datastore.Entity(key=datastore_client.key("post"), exclude_from_indexes=("subject", "message"))
     entity.update({"user": session["user"], "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")  ,"subject": subject, "message": message, "profileImg": imageSrc, "postImg": postImage} )
     datastore_client.put(entity)
 
+#function that returns a post based on user post selection when they click on the posts Edit button
 def getPosts(number):
     query = datastore_client.query(kind="post")
     query.order = ["-timestamp"]
@@ -124,6 +136,7 @@ def getPosts(number):
     times = query.fetch(limit=number)
     return times
 
+#function that returns a list of posts based on the logged in user
 def getPostsByUser(user):
     query = datastore_client.query(kind="post")
     query.add_filter(filter = PropertyFilter("user", "=", user))
@@ -135,29 +148,45 @@ def getPostsByUser(user):
     
     return time
 
-def uploadImg(blobName, filePath):
-    blob = bucket.blob(blobName)
-    blob.upload_from_filename(filePath)
+#function to upload an image to Google Bucket. Filename is altered if the image is for the profile pic.
+def uploadImg(type, regoId, file):
+    
+    if type == "profile":
+        
+        imageName = "profile" + regoId
+     
+    else:
+        
+        imageName = file.filename
+    
+    blob = bucket.blob(imageName)
+    blob.upload_from_file(file)
 
+#function that returns the public URL link for a profiles image stored in Google Bucket
 def getProfileImgSrc(user):
     
     return bucketProfilePath + getIDfromName(user)
 
-def editForumPost(postNumber, subject, message, image):
+#function to edit a user post. Takes a post number, subject, message, old image URL (optional), new image file(optional)
+def editForumPost(postNumber, subject, message, postOldImg, postNewImg):
     
-    if image == "":
+
+    postImage=""
+    
+    if postNewImg == "NA":
+
         
         postImage = "NA"
         
-    elif image[0:5] == "https":
+        if postOldImg[0:5] == "https":
         
-        postImage = image
+            postImage = postOldImg
         
     else:
-        
-        source =  filepath + image
-        uploadImg(image, source)
-        postImage = bucketPostPath + image
+
+        uploadImg("post", "NA", postNewImg)
+        postImage = bucketPostPath + postNewImg.filename
+        print(postImage)
   
     postList = getPostsByUser(session['user'])  
     entity = postList[int(postNumber)-1]
@@ -168,6 +197,8 @@ def editForumPost(postNumber, subject, message, image):
     user["timestamp"] = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     user["postImg"] = postImage
     datastore_client.put(user)
+    
+    print(user)
     print("successfully updated Post")
 
 
@@ -178,7 +209,7 @@ app = Flask(__name__)
 app.secret_key = "helloworld"
 app.config['UPLOAD_FOLDER'] = "/static/img"
 
-#this routes the pages as per tutorial 
+# Main page
 @app.route("/", methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -187,11 +218,9 @@ def index():
             
             print(session["user"])
             return redirect(url_for('forumMain'))
-            #return redirect(url_for('forumMain'))
         
         else:
         
-            #take the user input id and password from the html form and store it for validation
             login_id = request.form.get("loginid")
             login_pw = request.form.get("loginpw")
             
@@ -204,7 +233,6 @@ def index():
                 session["user"] = user.getUsername()
                 
                 return redirect(url_for('forumMain'))
-                #return render_template("forumMain.html", name = session["user"])
                 
             else:
                 
@@ -215,6 +243,7 @@ def index():
         session.clear()
         return render_template("index.html")
 
+# Registration Page
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
     
@@ -223,7 +252,7 @@ def registration():
         regoId = request.form.get("regId")
         regoUname = request.form.get("regUsername")
         regoPword = request.form.get("regPword")
-        filename = request.form.get("filename")
+        file = request.files["filename"]
 
         if (len(checkId(regoId)) > 0):
             
@@ -235,9 +264,7 @@ def registration():
             
         else:
              
-            profilePic = "profile" + regoId
-            source =  filepath + filename
-            uploadImg(profilePic, source)
+            uploadImg("profile", regoId, file)
             addUser(regoId, regoUname, regoPword)
             session.clear()
             return redirect(url_for('index'))
@@ -246,7 +273,7 @@ def registration():
            
         return render_template("registration.html") 
  
-
+# user admin page
 @app.route("/userAdmin", methods=['GET', 'POST'])
 def userAdmin():
     
@@ -260,8 +287,9 @@ def userAdmin():
             
             selection = request.form.get("postID")
             
-            if selection == 0:
-            
+            if selection == "0":
+                
+                print("got this far")
                 oldPword = request.form.get("oldPword")
                 newPword = request.form.get("newPword")
                 
@@ -272,7 +300,6 @@ def userAdmin():
                         
                         
                         updatePassword(session["user"], newPword)  
-                        #session.pop(session["user"], None)
                         session.clear()
                         return redirect(url_for('index'))
                     
@@ -281,21 +308,21 @@ def userAdmin():
                         print("old password mismatch")
                         return render_template("userAdmin.html", name = session["user"], error_message = "incorrect password", times = times, imageSrc = imageSrc)  
             
-            else:
+            elif selection =="1":
                 
                 postNumber = request.form.get("postID")
                 subject = request.form.get("postSubject")
                 message = request.form.get("editPostMessage")
                 postOldImg = request.form.get("postImgSrc")
-                postNewImg = request.form.get("filename")
+                postNewImg = request.files["filename"]
 
-                if postNewImg != "":
+                try:
                     
-                    editForumPost(postNumber, subject, message, postNewImg)
-                
-                else:
+                    editForumPost(postNumber, subject, message, postOldImg, postNewImg)
+                    
+                except:
 
-                    editForumPost(postNumber, subject, message, postOldImg)
+                    editForumPost(postNumber, subject, message, postOldImg, "NA")
                 
                 return redirect(url_for('forumMain')) 
                
@@ -312,7 +339,7 @@ def userAdmin():
         
         return redirect(url_for('index'))
     
-    
+# forum Main page    
 @app.route("/forumMain", methods=['GET', 'POST'])
 def forumMain():
     
@@ -324,9 +351,15 @@ def forumMain():
         
         subject = request.form.get("newSubject")
         message = request.form.get("newMessage")
-        image = request.form.get("filename")
-        
-        addForumPost(subject, message, image)
+        file = request.files["filename"]
+
+        try: 
+            
+            addForumPost(subject, message, file)
+            
+        except:
+
+            addForumPost(subject, message, "NA")
             
     return render_template("forumMain.html", name = session["user"], times = times, imageSrc = imageSrc)
         

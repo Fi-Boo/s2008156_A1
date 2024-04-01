@@ -9,20 +9,20 @@
 </head>
     <body>
         <header>
-            <h1> The Forum! </h1>
+            <h1> The Forum! </h1> <button><a href="https://s2008156-cca1.ts.r.appspot.com/">TASK 1</a></button> <button><a href="https://s2008156-cca1-2.ts.r.appspot.com/">TASK 2</a></button>
         </header>
         <div class="content">
             <div class="outerBox">
                 <h2>User Login</h2>
                 <div id="loginBox">
-                    <form class="loginForm" method="POST">
+                    <form class="loginForm" enctype="multipart/form-data" method="POST">
                         <br>
                         <p> {{ error_message }} </p>
                         <label for="loginid">ID: </label>
                         <input type="text" id="loginid" name="loginid" required>
                         <label for="loginpw">Password: </label>
                         <input type="password" id="loginpw" name="loginpw" required>
-                        <br><br><br>
+                        <br>
                         <div>
                             <input type="submit" value="Login">
                         </div>
@@ -43,4 +43,5 @@
             </div>
         </footer>         
     </body>
+    
 </html>

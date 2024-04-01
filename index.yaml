@@ -1,5 +1,6 @@
 indexes:
 
+
 - kind: posts
   ancestor: no
   properties:

@@ -72,15 +72,19 @@ input {
 
 .loginForm, .regoForm, .loginRego, .postForm, .passwordChange {
     display: grid;
-    grid-template-columns:25% 75%;
+    grid-template-columns:17% 83%;
     grid-column-gap: 1rem;
     grid-row-gap: 0.35rem;
-    margin: 2rem 3rem 0;
+    margin: 2rem 2rem 0;
 
 }
 
+.loginForm input, .regoForm input {
+    margin-right: 1rem;
+}
+
 .loginRego {
-    margin: -0.1rem 3rem;
+    margin: 2rem 2.9rem 0 2rem;
 }
 
 .passwordChange {
@@ -237,4 +241,33 @@ a:active {
 
 #editPostImg {
     width: 3rem;
+}
+
+header a:link, header a:visited {
+    color: black;
+}
+
+header a:active, header a:hover {
+    color: black;
+    font-weight: bold;
+}
+
+header a:active {
+    color: red;
+}
+
+.postEditBtn {
+    margin-right: 1rem;
+    border-radius: 20%;
+    background-image: linear-gradient(silver, black);
+    color: #d4af37;
+}
+
+button:hover {
+    background-image: linear-gradient(white, silver);
+    color: black;
+}
+
+button:active {
+    background: #d4af37;
 }
